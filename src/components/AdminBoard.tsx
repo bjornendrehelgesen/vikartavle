@@ -375,10 +375,10 @@ export default function AdminBoard({
         <div className="max-w-full mx-auto flex items-center justify-between gap-4 flex-wrap">
           <div className="flex items-center gap-4">
             <button onClick={() => navigateDate(-1)} className="bg-slate-600 hover:bg-slate-500 text-white px-3 py-1.5 rounded-lg text-sm transition-colors">
-              ← Forrige
+              ←<span className="hidden sm:inline"> Forrige</span>
             </button>
             <div>
-              <h1 className="text-xl font-bold capitalize">{formatNorwegianDate(date)}</h1>
+              <h1 className="text-base sm:text-xl font-bold capitalize">{formatNorwegianDate(date)}</h1>
               {date !== today && (
                 <button onClick={() => router.push('/admin')} className="text-slate-400 hover:text-slate-200 text-xs underline">
                   Gå til i dag
@@ -386,20 +386,20 @@ export default function AdminBoard({
               )}
             </div>
             <button onClick={() => navigateDate(1)} className="bg-slate-600 hover:bg-slate-500 text-white px-3 py-1.5 rounded-lg text-sm transition-colors">
-              Neste →
+              <span className="hidden sm:inline">Neste </span>→
             </button>
           </div>
           <div className="flex items-center gap-3">
             {saveStatus === 'saved' && <span className="text-green-400 text-sm">✓ Lagret</span>}
             {saveStatus === 'saving' && <span className="text-slate-400 text-sm">Lagrer...</span>}
             <button onClick={() => setShowSettings(true)} className="bg-slate-600 hover:bg-slate-500 text-white px-3 py-1.5 rounded-lg text-sm transition-colors" title="Innstillinger">
-              ⚙ Innstillinger
+              ⚙<span className="hidden sm:inline"> Innstillinger</span>
             </button>
-            <a href="/" target="_blank" rel="noopener noreferrer" className="text-slate-300 hover:text-white text-sm underline">
+            <a href="/" target="_blank" rel="noopener noreferrer" className="text-slate-300 hover:text-white text-sm underline hidden sm:inline">
               Se visning
             </a>
             <button onClick={handleLogout} className="bg-slate-600 hover:bg-slate-500 text-white px-3 py-1.5 rounded-lg text-sm transition-colors">
-              Logg ut
+              <span className="hidden sm:inline">Logg </span>ut
             </button>
           </div>
         </div>
@@ -407,11 +407,11 @@ export default function AdminBoard({
 
       <main className="flex-1 p-4 flex flex-col gap-4">
         {/* Main area: absences (2/3) + duties (1/3) */}
-        <div className="flex gap-4 items-start">
+        <div className="flex flex-col md:flex-row gap-4 items-start">
           {/* Left: Absences table */}
           <div className="flex-[2] min-w-0">
             <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
-              <div className="overflow-x-auto">
+              <div className="overflow-x-auto" style={{ WebkitOverflowScrolling: 'touch' }}>
                 <table className="w-full border-collapse">
                   <thead>
                     <tr className="bg-slate-700 text-white">
@@ -573,7 +573,7 @@ export default function AdminBoard({
           </div>
 
           {/* Right: Duties (1/3) */}
-          <div className="flex-[1] min-w-0 flex gap-3">
+          <div className="flex-[1] min-w-0 flex flex-row gap-3">
             {/* Vakter */}
             <div className="flex-1 bg-white rounded-xl border border-slate-200 overflow-hidden flex flex-col">
               <div className="bg-slate-700 text-white px-3 py-3 font-semibold text-sm text-center">
@@ -593,14 +593,14 @@ export default function AdminBoard({
                         value={duty.area}
                         onChange={(e) => handleDutyField(duty.id, 'area', e.target.value)}
                         placeholder="Sted"
-                        className="w-16 flex-shrink-0 border border-slate-200 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-slate-400"
+                        className="w-16 flex-shrink-0 border border-slate-200 rounded px-2 py-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-slate-400"
                       />
                       <input
                         type="text"
                         value={duty.time_slot}
                         onChange={(e) => handleDutyField(duty.id, 'time_slot', e.target.value)}
                         placeholder="Tid"
-                        className="w-14 flex-shrink-0 border border-slate-200 rounded px-2 py-1.5 text-sm text-center focus:outline-none focus:ring-1 focus:ring-slate-400"
+                        className="w-14 flex-shrink-0 border border-slate-200 rounded px-2 py-2.5 text-sm text-center focus:outline-none focus:ring-1 focus:ring-slate-400"
                       />
                       <div className="border rounded flex-1 min-w-0" style={assignedStyle}>
                         <input
@@ -608,13 +608,13 @@ export default function AdminBoard({
                           value={duty.assigned_to}
                           onChange={(e) => handleDutyField(duty.id, 'assigned_to', e.target.value)}
                           placeholder="–"
-                          className="w-full bg-transparent px-2 py-1.5 text-sm text-center focus:outline-none"
+                          className="w-full bg-transparent px-2 py-2.5 text-sm text-center focus:outline-none"
                           style={{ color: assignedStyle.color }}
                         />
                       </div>
                       <button
                         onClick={() => deleteDuty(duty.id)}
-                        className="text-slate-300 hover:text-red-500 transition-colors flex-shrink-0"
+                        className="p-2 text-slate-300 hover:text-red-500 transition-colors flex-shrink-0"
                       >
                         ✕
                       </button>
@@ -634,9 +634,9 @@ export default function AdminBoard({
                   onKeyDown={(e) => { if (e.key === 'Enter') submitDraftDuty() }}
                   onBlur={submitDraftDuty}
                   placeholder="Legg til…"
-                  className="w-16 flex-shrink-0 border border-slate-200 rounded px-2 py-1.5 text-sm text-slate-500 placeholder-slate-300 focus:outline-none focus:ring-1 focus:ring-slate-400 bg-transparent"
+                  className="w-16 flex-shrink-0 border border-slate-200 rounded px-2 py-2.5 text-sm text-slate-500 placeholder-slate-300 focus:outline-none focus:ring-1 focus:ring-slate-400 bg-transparent"
                 />
-                <div className="border rounded flex-1 min-w-0" style={{ backgroundColor: '#f8fafc', borderColor: '#f1f5f9', height: '34px' }} />
+                <div className="border rounded flex-1 min-w-0" style={{ backgroundColor: '#f8fafc', borderColor: '#f1f5f9', height: '38px' }} />
                 <div className="w-5 flex-shrink-0" />
               </div>
             </div>
@@ -658,7 +658,7 @@ export default function AdminBoard({
                       <select
                         value={duty.direction}
                         onChange={(e) => handleBusDutyField(duty.id, 'direction', e.target.value)}
-                        className="w-24 flex-shrink-0 border border-slate-200 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-slate-400 bg-white"
+                        className="w-24 flex-shrink-0 border border-slate-200 rounded px-2 py-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-slate-400 bg-white"
                       >
                         <option value="">Retning</option>
                         <option value="Ålesund">Ålesund</option>
@@ -669,7 +669,7 @@ export default function AdminBoard({
                         value={duty.time_label}
                         onChange={(e) => handleBusDutyField(duty.id, 'time_label', e.target.value)}
                         placeholder="Tid"
-                        className="w-20 flex-shrink-0 border border-slate-200 rounded px-2 py-1.5 text-sm text-center focus:outline-none focus:ring-1 focus:ring-slate-400"
+                        className="w-20 flex-shrink-0 border border-slate-200 rounded px-2 py-2.5 text-sm text-center focus:outline-none focus:ring-1 focus:ring-slate-400"
                       />
                       {/* Colored assigned_to input */}
                       <div className="border rounded flex-1 min-w-0" style={assignedStyle}>
@@ -678,13 +678,13 @@ export default function AdminBoard({
                           value={duty.assigned_to}
                           onChange={(e) => handleBusDutyField(duty.id, 'assigned_to', e.target.value)}
                           placeholder="–"
-                          className="w-full bg-transparent px-2 py-1.5 text-sm text-center focus:outline-none"
+                          className="w-full bg-transparent px-2 py-2.5 text-sm text-center focus:outline-none"
                           style={{ color: assignedStyle.color }}
                         />
                       </div>
                       <button
                         onClick={() => deleteBusDuty(duty.id)}
-                        className="text-slate-300 hover:text-red-500 transition-colors flex-shrink-0"
+                        className="p-2 text-slate-300 hover:text-red-500 transition-colors flex-shrink-0"
                       >
                         ✕
                       </button>
@@ -704,9 +704,9 @@ export default function AdminBoard({
                   onKeyDown={(e) => { if (e.key === 'Enter') submitDraftBusDuty() }}
                   onBlur={submitDraftBusDuty}
                   placeholder="Legg til…"
-                  className="w-20 flex-shrink-0 border border-slate-200 rounded px-2 py-1.5 text-sm text-center text-slate-500 placeholder-slate-300 focus:outline-none focus:ring-1 focus:ring-slate-400 bg-transparent"
+                  className="w-20 flex-shrink-0 border border-slate-200 rounded px-2 py-2.5 text-sm text-center text-slate-500 placeholder-slate-300 focus:outline-none focus:ring-1 focus:ring-slate-400 bg-transparent"
                 />
-                <div className="border rounded flex-1 min-w-0" style={{ backgroundColor: '#f8fafc', borderColor: '#f1f5f9', height: '34px' }} />
+                <div className="border rounded flex-1 min-w-0" style={{ backgroundColor: '#f8fafc', borderColor: '#f1f5f9', height: '38px' }} />
                 <div className="w-5 flex-shrink-0" />
               </div>
             </div>
@@ -714,7 +714,7 @@ export default function AdminBoard({
         </div>
 
         {/* Bottom section: info + absence lists */}
-        <div className="flex gap-4">
+        <div className="flex flex-col md:flex-row gap-4">
           {/* Info text: 2/3 */}
           <div className="flex-[2] bg-white rounded-xl border border-slate-200 p-4">
             <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">
