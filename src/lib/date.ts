@@ -1,5 +1,5 @@
 export function toISODate(date: Date): string {
-  return date.toISOString().split('T')[0]
+  return date.toLocaleDateString('sv-SE', { timeZone: 'Europe/Oslo' })
 }
 
 export function todayISO(): string {
