@@ -1,16 +1,25 @@
 import { createClient } from '@/lib/supabase/server'
 import { todayISO } from '@/lib/date'
-import DisplayBoard from '@/components/DisplayBoard'
-import type { Board, Absence, Substitution, BoardDuty, BoardBusDuty } from '@/lib/supabase/types'
+import { redirect } from 'next/navigation'
+import AdminBoard from '@/components/AdminBoard'
+import type { Board, Absence, Substitution, BoardDuty, BoardBusDuty, DutyArea, BusTime } from '@/lib/supabase/types'
 
 export const dynamic = 'force-dynamic'
 
-export default async function DisplayPage() {
+interface Props {
+  searchParams: Promise<{ date?: string }>
+}
+
+export default async function AdminPage({ searchParams }: Props) {
   const supabase = await createClient()
-  const today = todayISO()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) redirect('/admin/login')
+
+  const params = await searchParams
+  const date = params.date ?? todayISO()
 
   const { data: boardData } = await supabase
-    .from('boards').select('*').eq('date', today).single()
+    .from('boards').select('*').eq('date', date).single()
   const board = boardData as Board | null
 
   let absences: Absence[] = []
@@ -42,14 +51,24 @@ export default async function DisplayPage() {
     busDuties = (busDutiesData as BoardBusDuty[] | null) ?? []
   }
 
+  const { data: dutyAreasData } = await supabase
+    .from('duty_areas').select('*').order('sort_order', { ascending: true })
+  const dutyAreas = (dutyAreasData as DutyArea[] | null) ?? []
+
+  const { data: busTimesData } = await supabase
+    .from('bus_times').select('*').order('sort_order', { ascending: true })
+  const busTimes = (busTimesData as BusTime[] | null) ?? []
+
   return (
-    <DisplayBoard
+    <AdminBoard
       initialBoard={board}
       initialAbsences={absences}
       initialSubstitutions={substitutions}
       initialDuties={duties}
       initialBusDuties={busDuties}
-      date={today}
+      initialDutyAreas={dutyAreas}
+      initialBusTimes={busTimes}
+      date={date}
     />
   )
 }
