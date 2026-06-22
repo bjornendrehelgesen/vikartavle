@@ -313,7 +313,7 @@ export default function DisplayBoard({
       {(board?.info_text || hasOversikt) && (
         <footer style={{ borderTop: DIVIDER, flexShrink: 0, display: 'flex' }}>
           {/* Info — matches left column width */}
-          <div style={{ flex: 1, padding: '18px 48px', display: 'flex', alignItems: 'center', gap: '20px' }}>
+          <div style={{ flex: 1, padding: '34px 48px', display: 'flex', alignItems: 'center', gap: '20px' }}>
             {board?.info_text && (
               <>
                 <span style={{ fontSize: '10px', fontWeight: 500, letterSpacing: '0.22em', textTransform: 'uppercase', color: '#BBB', whiteSpace: 'nowrap' }}>Info</span>
@@ -323,7 +323,7 @@ export default function DisplayBoard({
           </div>
           {/* Oversikt — matches right column width */}
           {showRightPanel && hasOversikt && (
-            <div style={{ width: '375px', padding: '16px 36px', borderLeft: DIVIDER, display: 'flex', gap: '32px', alignItems: 'center', flexShrink: 0 }}>
+            <div style={{ width: '375px', padding: '30px 36px', borderLeft: DIVIDER, display: 'flex', gap: '32px', alignItems: 'center', flexShrink: 0 }}>
               <div>
                 <p style={{ fontSize: '10px', fontWeight: 500, letterSpacing: '0.22em', textTransform: 'uppercase', color: '#BBB', marginBottom: '4px' }}>Fravær</p>
                 <p style={{ fontSize: '18px', fontWeight: 400, color: '#1A1A1A' }}>
