@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { formatNorwegianDate } from '@/lib/date'
 import type { Board, Absence, Substitution, BoardDuty, BoardBusDuty } from '@/lib/supabase/types'
@@ -13,6 +13,9 @@ interface Props {
   initialBusDuties: BoardBusDuty[]
   date: string
 }
+
+const DIVIDER = '0.5px solid #D8D4CC'
+const ROW_DIV = '0.5px solid #E8E5E0'
 
 export default function DisplayBoard({
   initialBoard,
@@ -29,24 +32,6 @@ export default function DisplayBoard({
   const [busDuties, setBusDuties] = useState<BoardBusDuty[]>(initialBusDuties)
 
   const supabase = createClient()
-  const pageContainerRef = useRef<HTMLDivElement>(null)
-  const pageContentRef = useRef<HTMLDivElement>(null)
-  const [pageScale, setPageScale] = useState(1)
-
-  useEffect(() => {
-    function computeScale() {
-      const container = pageContainerRef.current
-      const content = pageContentRef.current
-      if (!container || !content) return
-      const ratio = container.clientHeight / content.scrollHeight
-      setPageScale(ratio < 1 ? ratio : 1)
-    }
-    computeScale()
-    const ro = new ResizeObserver(computeScale)
-    if (pageContainerRef.current) ro.observe(pageContainerRef.current)
-    if (pageContentRef.current) ro.observe(pageContentRef.current)
-    return () => ro.disconnect()
-  }, [absences, duties, busDuties])
 
   useEffect(() => {
     async function refetchAll(boardId: string) {
@@ -132,202 +117,198 @@ export default function DisplayBoard({
   const periods = Array.from({ length: maxPeriods }, (_, i) => i + 1)
 
   const hasDuties = duties.length > 0 || busDuties.length > 0
-  const hasRightPanel = hasDuties || absences.length > 0
+  const hasOversikt = absences.length > 0 || !!(board?.extra_absent) || !!(board?.extra_partial_day)
+  const showRightPanel = hasDuties || hasOversikt
+
+  const legend = [
+    { label: 'Vikar satt inn', bg: '#4A7C59' },
+    { label: 'Ingen vikar', bg: '#C9785C' },
+    { label: 'Ikke aktuelt', bg: '#DDDBD7' },
+  ]
 
   return (
-    <div className="h-screen flex flex-col overflow-hidden" style={{ backgroundColor: '#F7F5F2', color: '#1A1A1A' }}>
-      {/* Hero header */}
-      <header className="flex-shrink-0 px-10 pt-8 pb-6" style={{ borderBottom: '1px solid #E8E4E0' }}>
-        <p style={{ fontSize: '0.6rem', fontWeight: 600, letterSpacing: '0.25em', textTransform: 'uppercase', color: '#C9A96E', marginBottom: '0.75rem' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', width: '100vw', backgroundColor: '#F7F5F2', color: '#1A1A1A', overflow: 'hidden' }}>
+
+      {/* Header */}
+      <header style={{ padding: '32px 48px 26px', borderBottom: DIVIDER, flexShrink: 0 }}>
+        <p style={{ fontSize: '11px', fontWeight: 500, letterSpacing: '0.22em', textTransform: 'uppercase', color: '#AAA', marginBottom: '6px' }}>
           Vikartavle
         </p>
-        <h1 style={{ fontSize: '5rem', fontWeight: 300, color: '#1A1A1A', letterSpacing: '-0.02em', lineHeight: 1 }}>
+        <h1 style={{ fontSize: '52px', fontWeight: 300, letterSpacing: '-0.02em', color: '#1A1A1A', lineHeight: 1.1 }}>
           {formatNorwegianDate(date)}
         </h1>
-        <div style={{ marginTop: '1rem', height: '1px', width: '3rem', backgroundColor: '#C9A96E' }} />
       </header>
 
-      {/* Scalable content area */}
-      <div ref={pageContainerRef} className="flex-1 overflow-hidden relative">
-        <div
-          ref={pageContentRef}
-          className="absolute top-0 left-0 flex flex-col"
-          style={{
-            transform: `scale(${pageScale})`,
-            transformOrigin: 'top left',
-            width: `${(1 / pageScale) * 100}%`,
-          }}
-        >
-          <main className="flex px-10 pt-8 pb-4 gap-0">
-            {/* Absence table */}
-            <div className={hasRightPanel ? 'flex-[3] pr-12' : 'flex-1'}>
-              {absences.length === 0 ? (
-                <div className="py-20 text-center">
-                  <p style={{ fontSize: '2.5rem', fontWeight: 300, color: '#4A7C59' }}>Ingen fravær i dag</p>
-                  <p style={{ fontSize: '1.25rem', fontWeight: 300, color: '#999', marginTop: '0.5rem' }}>God arbeidsdag</p>
-                </div>
-              ) : (
-                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                  <thead>
-                    <tr>
-                      <th style={{ textAlign: 'left', paddingBottom: '0.75rem', paddingRight: '2rem', fontSize: '0.6rem', fontWeight: 600, letterSpacing: '0.2em', textTransform: 'uppercase', color: '#999', borderBottom: '1px solid #C9A96E' }}>
-                        Lærer
-                      </th>
-                      {periods.map((p) => (
-                        <th key={p} style={{ textAlign: 'center', paddingBottom: '0.75rem', paddingLeft: '2px', paddingRight: '2px', fontSize: '0.6rem', fontWeight: 600, letterSpacing: '0.2em', textTransform: 'uppercase', color: '#999', borderBottom: '1px solid #C9A96E' }}>
-                          {p}. time
-                        </th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {absences.map((absence) => {
-                      const rowPeriods = absence.num_periods ?? 6
-                      return (
-                        <tr key={absence.id} style={{ borderBottom: '1px solid #E8E4E0' }}>
-                          <td style={{ fontSize: '1.875rem', fontWeight: 700, color: '#1A1A1A', padding: '1.5rem 2rem 1.5rem 0', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>
-                            {absence.teacher_initials}
-                          </td>
-                          {periods.map((p) => {
-                            const active = p <= rowPeriods
-                            const text = active ? getSubText(absence.id, p) : null
+      {/* Body */}
+      <div style={{ display: 'grid', gridTemplateColumns: showRightPanel ? '1fr 500px' : '1fr', flex: 1, minHeight: 0 }}>
 
-                            let bg: string, cellColor: string, label: string
-                            if (!active) {
-                              bg = 'transparent'; cellColor = 'transparent'; label = ''
-                            } else if (text === '-') {
-                              bg = '#EBEBEB'; cellColor = '#C5C0BB'; label = '—'
-                            } else if (text) {
-                              bg = '#4A7C59'; cellColor = '#FFFFFF'; label = text
-                            } else {
-                              bg = '#D4846A'; cellColor = '#E8A892'; label = '—'
-                            }
+        {/* Left: substitution table */}
+        <div style={{ padding: '30px 48px 32px', borderRight: showRightPanel ? DIVIDER : 'none', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
 
-                            return (
-                              <td
-                                key={p}
-                                style={{
-                                  backgroundColor: bg,
-                                  padding: '0 2px',
-                                  verticalAlign: 'middle',
-                                }}
-                              >
-                                <div style={{
-                                  fontSize: '1.5rem',
-                                  fontWeight: 700,
-                                  color: cellColor,
-                                  textAlign: 'center',
-                                  padding: '1.5rem 0.5rem',
-                                }}>
-                                  {label}
-                                </div>
-                              </td>
-                            )
-                          })}
-                        </tr>
-                      )
-                    })}
-                  </tbody>
-                </table>
-              )}
+          {absences.length === 0 ? (
+            <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <div style={{ textAlign: 'center' }}>
+                <p style={{ fontSize: '2rem', fontWeight: 300, color: '#4A7C59' }}>Ingen fravær i dag</p>
+                <p style={{ fontSize: '1rem', fontWeight: 300, color: '#AAA', marginTop: '0.5rem' }}>God arbeidsdag</p>
+              </div>
             </div>
+          ) : (
+            <>
+              {/* Legend */}
+              <div style={{ display: 'flex', gap: '20px', alignItems: 'center', marginBottom: '22px', flexShrink: 0 }}>
+                {legend.map(({ label, bg }) => (
+                  <div key={label} style={{ display: 'flex', alignItems: 'center', gap: '7px', fontSize: '10px', fontWeight: 500, letterSpacing: '0.16em', textTransform: 'uppercase', color: '#AAA' }}>
+                    <div style={{ width: '10px', height: '10px', borderRadius: '2px', backgroundColor: bg, flexShrink: 0 }} />
+                    {label}
+                  </div>
+                ))}
+              </div>
 
-            {/* Right panel: Vakter, Bussvakter, Oversikt */}
-            {hasRightPanel && (
-              <div className="flex-[1] flex flex-col gap-8 min-w-0" style={{ borderLeft: '1px solid #E8E4E0', paddingLeft: '2.5rem' }}>
-                {duties.length > 0 && (
-                  <section>
-                    <p style={{ fontSize: '0.6rem', fontWeight: 600, letterSpacing: '0.2em', textTransform: 'uppercase', color: '#999', marginBottom: '0.75rem' }}>
-                      Vakter
-                    </p>
-                    <div>
-                      {duties.map((duty) => {
-                        const hasName = duty.assigned_to && duty.assigned_to !== '-'
-                        return (
-                          <div key={duty.id} style={{ display: 'flex', alignItems: 'center', padding: '0.75rem 0', borderBottom: '1px solid #E8E4E0' }}>
-                            <div style={{ flex: 1, minWidth: 0 }}>
-                              <span style={{ fontSize: '1rem', fontWeight: 600, color: '#1A1A1A' }}>{duty.area}</span>
-                              {duty.time_slot && <span style={{ fontSize: '0.8rem', color: '#999', marginLeft: '0.5rem' }}>{duty.time_slot}</span>}
-                            </div>
-                            <span style={{ fontSize: '1.125rem', fontWeight: 700, color: hasName ? '#4A7C59' : '#D4846A', marginLeft: '1rem', flexShrink: 0 }}>
-                              {duty.assigned_to || '–'}
-                            </span>
-                          </div>
-                        )
-                      })}
-                    </div>
-                  </section>
-                )}
+              {/* Table */}
+              <table style={{ width: '100%', borderCollapse: 'collapse', tableLayout: 'fixed' }}>
+                <thead>
+                  <tr>
+                    <th style={{ textAlign: 'left', width: '90px', fontSize: '11px', fontWeight: 500, letterSpacing: '0.18em', textTransform: 'uppercase', color: '#AAA', paddingBottom: '16px', borderBottom: DIVIDER }}>
+                      Lærer
+                    </th>
+                    {periods.map((p) => (
+                      <th key={p} style={{ textAlign: 'center', fontSize: '11px', fontWeight: 500, letterSpacing: '0.18em', textTransform: 'uppercase', color: '#AAA', paddingBottom: '16px', borderBottom: DIVIDER }}>
+                        {p}. time
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {absences.map((absence, idx) => {
+                    const rowPeriods = absence.num_periods ?? 6
+                    const isLast = idx === absences.length - 1
+                    return (
+                      <tr key={absence.id}>
+                        <td style={{ fontSize: '30px', fontWeight: 300, letterSpacing: '0.04em', color: '#1A1A1A', paddingLeft: 0, paddingTop: '10px', paddingBottom: '10px', paddingRight: '6px', verticalAlign: 'middle', borderBottom: isLast ? 'none' : ROW_DIV }}>
+                          {absence.teacher_initials}
+                        </td>
+                        {periods.map((p) => {
+                          const active = p <= rowPeriods
+                          const text = active ? getSubText(absence.id, p) : null
 
-                {busDuties.length > 0 && (
-                  <section>
-                    <p style={{ fontSize: '0.6rem', fontWeight: 600, letterSpacing: '0.2em', textTransform: 'uppercase', color: '#999', marginBottom: '0.75rem' }}>
-                      Bussvakter
-                    </p>
-                    <div>
-                      {busDuties.map((duty) => {
-                        const hasName = duty.assigned_to && duty.assigned_to !== '-'
-                        return (
-                          <div key={duty.id} style={{ display: 'flex', alignItems: 'center', padding: '0.75rem 0', borderBottom: '1px solid #E8E4E0' }}>
-                            <div style={{ flex: 1, minWidth: 0 }}>
-                              <span style={{ fontSize: '1rem', fontWeight: 600, color: '#1A1A1A' }}>{duty.direction || ''}</span>
-                              {duty.time_label && <span style={{ fontSize: '0.8rem', color: '#999', marginLeft: '0.5rem' }}>{duty.time_label}</span>}
-                            </div>
-                            <span style={{ fontSize: '1.125rem', fontWeight: 700, color: hasName ? '#4A7C59' : '#D4846A', marginLeft: '1rem', flexShrink: 0 }}>
-                              {duty.assigned_to || '–'}
-                            </span>
-                          </div>
-                        )
-                      })}
-                    </div>
-                  </section>
-                )}
+                          let cellStyle: React.CSSProperties
+                          let label: string
 
-                {(absences.length > 0 || board?.extra_absent || board?.extra_partial_day) && (
-                  <section>
-                    <p style={{ fontSize: '0.6rem', fontWeight: 600, letterSpacing: '0.2em', textTransform: 'uppercase', color: '#999', marginBottom: '0.75rem' }}>
-                      Oversikt
-                    </p>
-                    <div style={{ borderTop: '1px solid #E8E4E0' }}>
-                      <div style={{ padding: '0.75rem 0', borderBottom: '1px solid #E8E4E0' }}>
-                        <p style={{ fontSize: '0.55rem', fontWeight: 600, letterSpacing: '0.15em', textTransform: 'uppercase', color: '#C5C0BB', marginBottom: '0.25rem' }}>Fravær</p>
-                        <p style={{ fontSize: '0.9rem', fontWeight: 500, color: '#1A1A1A', lineHeight: 1.5 }}>
-                          {[
-                            ...absences.filter((a) => a.is_absent !== false).map((a) => a.teacher_initials),
-                            ...(board?.extra_absent ?? '').split('\n').map((s) => s.trim()).filter(Boolean),
-                          ].join(', ') || '–'}
-                        </p>
+                          if (!active) {
+                            return (
+                              <td key={p} style={{ padding: '10px 6px', verticalAlign: 'middle', borderBottom: isLast ? 'none' : ROW_DIV }} />
+                            )
+                          } else if (text === '-') {
+                            cellStyle = { height: '64px', borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '22px', fontWeight: 300, letterSpacing: '0.06em', margin: '3px', backgroundColor: '#DDDBD7', color: '#BCB9B4' }
+                            label = '—'
+                          } else if (text) {
+                            cellStyle = { height: '64px', borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px', fontWeight: 500, letterSpacing: '0.06em', margin: '3px', backgroundColor: '#4A7C59', color: '#ffffff' }
+                            label = text
+                          } else {
+                            cellStyle = { height: '64px', borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '22px', fontWeight: 300, letterSpacing: '0.06em', margin: '3px', backgroundColor: '#C9785C', color: 'rgba(255,255,255,0.85)' }
+                            label = '—'
+                          }
+
+                          return (
+                            <td key={p} style={{ padding: '10px 6px', verticalAlign: 'middle', borderBottom: isLast ? 'none' : ROW_DIV }}>
+                              <div style={cellStyle}>{label}</div>
+                            </td>
+                          )
+                        })}
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table>
+            </>
+          )}
+        </div>
+
+        {/* Right: Vakter, Bussvakter, Oversikt */}
+        {showRightPanel && (
+          <div style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+
+            {duties.length > 0 && (
+              <div style={{ padding: '28px 36px', borderBottom: DIVIDER, flexShrink: 0 }}>
+                <p style={{ fontSize: '11px', fontWeight: 500, letterSpacing: '0.22em', textTransform: 'uppercase', color: '#AAA', marginBottom: '22px' }}>
+                  Vakter
+                </p>
+                {duties.map((duty, idx) => {
+                  const hasName = duty.assigned_to && duty.assigned_to !== '-'
+                  return (
+                    <div key={duty.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: idx < duties.length - 1 ? '20px' : 0 }}>
+                      <div style={{ display: 'flex', alignItems: 'baseline', gap: '14px' }}>
+                        <span style={{ fontSize: '22px', fontWeight: 500, color: '#1A1A1A' }}>{duty.area}</span>
+                        {duty.time_slot && <span style={{ fontSize: '20px', fontWeight: 300, color: '#888', letterSpacing: '0.02em' }}>{duty.time_slot}</span>}
                       </div>
-                      <div style={{ padding: '0.75rem 0' }}>
-                        <p style={{ fontSize: '0.55rem', fontWeight: 600, letterSpacing: '0.15em', textTransform: 'uppercase', color: '#C5C0BB', marginBottom: '0.25rem' }}>Deler av dag</p>
-                        <p style={{ fontSize: '0.9rem', fontWeight: 500, color: '#1A1A1A', lineHeight: 1.5 }}>
-                          {[
-                            ...absences.filter((a) => a.is_absent === false).map((a) => a.teacher_initials),
-                            ...(board?.extra_partial_day ?? '').split('\n').map((s) => s.trim()).filter(Boolean),
-                          ].join(', ') || '–'}
-                        </p>
+                      <div style={{ height: '52px', minWidth: '80px', borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px', fontWeight: 500, letterSpacing: '0.08em', padding: '0 20px', flexShrink: 0, backgroundColor: hasName ? '#4A7C59' : '#C9785C', color: hasName ? '#ffffff' : 'rgba(255,255,255,0.9)' }}>
+                        {duty.assigned_to || '–'}
                       </div>
                     </div>
-                  </section>
-                )}
+                  )
+                })}
               </div>
             )}
-          </main>
 
-          {/* Informasjon — full-width bottom strip */}
-          {board?.info_text && (
-            <footer className="px-10 py-6 mt-4" style={{ borderTop: '1px solid #E8E4E0' }}>
-              <p style={{ fontSize: '0.6rem', fontWeight: 600, letterSpacing: '0.2em', textTransform: 'uppercase', color: '#999', marginBottom: '0.5rem' }}>
-                Informasjon
-              </p>
-              <p style={{ fontSize: '1.25rem', fontStyle: 'italic', fontWeight: 300, color: '#555', lineHeight: 1.6, whiteSpace: 'pre-wrap' }}>
-                {board.info_text}
-              </p>
-            </footer>
-          )}
+            {busDuties.length > 0 && (
+              <div style={{ padding: '28px 36px', borderBottom: DIVIDER, flexShrink: 0 }}>
+                <p style={{ fontSize: '11px', fontWeight: 500, letterSpacing: '0.22em', textTransform: 'uppercase', color: '#AAA', marginBottom: '22px' }}>
+                  Bussvakter
+                </p>
+                {busDuties.map((duty, idx) => {
+                  const hasName = duty.assigned_to && duty.assigned_to !== '-'
+                  return (
+                    <div key={duty.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: idx < busDuties.length - 1 ? '20px' : 0 }}>
+                      <div style={{ display: 'flex', alignItems: 'baseline', gap: '14px' }}>
+                        <span style={{ fontSize: '22px', fontWeight: 500, color: '#1A1A1A' }}>{duty.direction || ''}</span>
+                        {duty.time_label && <span style={{ fontSize: '20px', fontWeight: 300, color: '#888', letterSpacing: '0.02em' }}>{duty.time_label}</span>}
+                      </div>
+                      <div style={{ height: '52px', minWidth: '80px', borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px', fontWeight: 500, letterSpacing: '0.08em', padding: '0 20px', flexShrink: 0, backgroundColor: hasName ? '#4A7C59' : '#C9785C', color: hasName ? '#ffffff' : 'rgba(255,255,255,0.9)' }}>
+                        {duty.assigned_to || '–'}
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            )}
 
-        </div>{/* end pageContentRef */}
-      </div>{/* end pageContainerRef */}
+            {hasOversikt && (
+              <div style={{ padding: '28px 36px', flex: 1 }}>
+                <p style={{ fontSize: '11px', fontWeight: 500, letterSpacing: '0.22em', textTransform: 'uppercase', color: '#AAA', marginBottom: '22px' }}>
+                  Oversikt
+                </p>
+                <div style={{ marginBottom: '22px' }}>
+                  <p style={{ fontSize: '10px', fontWeight: 500, letterSpacing: '0.22em', textTransform: 'uppercase', color: '#BBB', marginBottom: '6px' }}>Fravær</p>
+                  <p style={{ fontSize: '22px', fontWeight: 400, color: '#1A1A1A' }}>
+                    {[
+                      ...absences.filter((a) => a.is_absent !== false).map((a) => a.teacher_initials),
+                      ...(board?.extra_absent ?? '').split('\n').map((s) => s.trim()).filter(Boolean),
+                    ].join(', ') || '–'}
+                  </p>
+                </div>
+                <div>
+                  <p style={{ fontSize: '10px', fontWeight: 500, letterSpacing: '0.22em', textTransform: 'uppercase', color: '#BBB', marginBottom: '6px' }}>Deler av dag</p>
+                  <p style={{ fontSize: '22px', fontWeight: 400, color: '#1A1A1A' }}>
+                    {[
+                      ...absences.filter((a) => a.is_absent === false).map((a) => a.teacher_initials),
+                      ...(board?.extra_partial_day ?? '').split('\n').map((s) => s.trim()).filter(Boolean),
+                    ].join(', ') || '–'}
+                  </p>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Footer */}
+      {board?.info_text && (
+        <footer style={{ padding: '18px 48px', borderTop: DIVIDER, display: 'flex', alignItems: 'center', gap: '20px', flexShrink: 0 }}>
+          <span style={{ fontSize: '10px', fontWeight: 500, letterSpacing: '0.22em', textTransform: 'uppercase', color: '#BBB', whiteSpace: 'nowrap' }}>Info</span>
+          <span style={{ fontSize: '15px', color: '#888', fontStyle: 'italic' }}>{board.info_text}</span>
+        </footer>
+      )}
+
     </div>
   )
 }
