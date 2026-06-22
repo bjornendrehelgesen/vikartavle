@@ -163,7 +163,7 @@ export default function DisplayBoard({
 
   const legend = [
     { label: 'Vikar satt inn', bg: '#4A7C59' },
-    { label: 'Ingen vikar', bg: '#C9785C' },
+    { label: 'Mangler vikar', bg: '#C9785C' },
     { label: 'Ikke aktuelt', bg: '#DDDBD7' },
   ]
 
