@@ -61,6 +61,7 @@ export default async function AdminPage({ searchParams }: Props) {
 
   return (
     <AdminBoard
+      key={date}
       initialBoard={board}
       initialAbsences={absences}
       initialSubstitutions={substitutions}
