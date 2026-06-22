@@ -159,7 +159,7 @@ export default function DisplayBoard({
       </header>
 
       {/* Body */}
-      <div style={{ display: 'grid', gridTemplateColumns: showRightPanel ? '1fr 500px' : '1fr', flex: 1, minHeight: 0 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: showRightPanel ? '1fr 375px' : '1fr', flex: 1, minHeight: 0 }}>
 
         {/* Left: substitution table */}
         <div style={{ padding: '30px 48px 32px', borderRight: showRightPanel ? DIVIDER : 'none', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
@@ -283,7 +283,7 @@ export default function DisplayBoard({
             )}
 
             {busDuties.length > 0 && (
-              <div style={{ padding: '28px 36px', borderBottom: DIVIDER, flexShrink: 0 }}>
+              <div style={{ padding: '28px 36px', flexShrink: 0 }}>
                 <p style={{ fontSize: '11px', fontWeight: 500, letterSpacing: '0.22em', textTransform: 'uppercase', color: '#AAA', marginBottom: '22px' }}>
                   Bussvakter
                 </p>
@@ -304,41 +304,46 @@ export default function DisplayBoard({
               </div>
             )}
 
-            {hasOversikt && (
-              <div style={{ padding: '28px 36px', flex: 1 }}>
-                <p style={{ fontSize: '11px', fontWeight: 500, letterSpacing: '0.22em', textTransform: 'uppercase', color: '#AAA', marginBottom: '22px' }}>
-                  Oversikt
-                </p>
-                <div style={{ marginBottom: '22px' }}>
-                  <p style={{ fontSize: '10px', fontWeight: 500, letterSpacing: '0.22em', textTransform: 'uppercase', color: '#BBB', marginBottom: '6px' }}>Fravær</p>
-                  <p style={{ fontSize: '22px', fontWeight: 400, color: '#1A1A1A' }}>
-                    {[
-                      ...absences.filter((a) => a.is_absent !== false).map((a) => a.teacher_initials),
-                      ...(board?.extra_absent ?? '').split('\n').map((s) => s.trim()).filter(Boolean),
-                    ].join(', ') || '–'}
-                  </p>
-                </div>
-                <div>
-                  <p style={{ fontSize: '10px', fontWeight: 500, letterSpacing: '0.22em', textTransform: 'uppercase', color: '#BBB', marginBottom: '6px' }}>Deler av dag</p>
-                  <p style={{ fontSize: '22px', fontWeight: 400, color: '#1A1A1A' }}>
-                    {[
-                      ...absences.filter((a) => a.is_absent === false).map((a) => a.teacher_initials),
-                      ...(board?.extra_partial_day ?? '').split('\n').map((s) => s.trim()).filter(Boolean),
-                    ].join(', ') || '–'}
-                  </p>
-                </div>
-              </div>
-            )}
           </div>
           </div>
         )}
       </div>
 
-      {/* Footer */}
-      {board?.info_text && (
-        <footer style={{ padding: '18px 48px', borderTop: DIVIDER, display: 'flex', alignItems: 'center', gap: '20px', flexShrink: 0 }}>
-          <span style={{ fontSize: '10px', fontWeight: 500, letterSpacing: '0.22em', textTransform: 'uppercase', color: '#BBB', whiteSpace: 'nowrap' }}>Info</span>
-          <span style={{ fontSize: '15px', color: '#888', fontStyle: 'italic' }}>{board.info_text}</span>
+      {/* Footer: Info (left column) + Oversikt (right column) — aligned with body grid */}
+      {(board?.info_text || hasOversikt) && (
+        <footer style={{ borderTop: DIVIDER, flexShrink: 0, display: 'flex' }}>
+          {/* Info — matches left column width */}
+          <div style={{ flex: 1, padding: '18px 48px', display: 'flex', alignItems: 'center', gap: '20px' }}>
+            {board?.info_text && (
+              <>
+                <span style={{ fontSize: '10px', fontWeight: 500, letterSpacing: '0.22em', textTransform: 'uppercase', color: '#BBB', whiteSpace: 'nowrap' }}>Info</span>
+                <span style={{ fontSize: '15px', color: '#888', fontStyle: 'italic' }}>{board.info_text}</span>
+              </>
+            )}
+          </div>
+          {/* Oversikt — matches right column width */}
+          {showRightPanel && hasOversikt && (
+            <div style={{ width: '375px', padding: '16px 36px', borderLeft: DIVIDER, display: 'flex', gap: '32px', alignItems: 'center', flexShrink: 0 }}>
+              <div>
+                <p style={{ fontSize: '10px', fontWeight: 500, letterSpacing: '0.22em', textTransform: 'uppercase', color: '#BBB', marginBottom: '4px' }}>Fravær</p>
+                <p style={{ fontSize: '18px', fontWeight: 400, color: '#1A1A1A' }}>
+                  {[
+                    ...absences.filter((a) => a.is_absent !== false).map((a) => a.teacher_initials),
+                    ...(board?.extra_absent ?? '').split('\n').map((s) => s.trim()).filter(Boolean),
+                  ].join(', ') || '–'}
+                </p>
+              </div>
+              <div>
+                <p style={{ fontSize: '10px', fontWeight: 500, letterSpacing: '0.22em', textTransform: 'uppercase', color: '#BBB', marginBottom: '4px' }}>Deler av dag</p>
+                <p style={{ fontSize: '18px', fontWeight: 400, color: '#1A1A1A' }}>
+                  {[
+                    ...absences.filter((a) => a.is_absent === false).map((a) => a.teacher_initials),
+                    ...(board?.extra_partial_day ?? '').split('\n').map((s) => s.trim()).filter(Boolean),
+                  ].join(', ') || '–'}
+                </p>
+              </div>
+            </div>
+          )}
         </footer>
       )}
 
