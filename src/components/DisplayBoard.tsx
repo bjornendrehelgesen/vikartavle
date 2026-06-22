@@ -134,13 +134,13 @@ export default function DisplayBoard({
   const hasDuties = duties.length > 0 || busDuties.length > 0
 
   return (
-    <div className="h-screen flex flex-col bg-slate-50 overflow-hidden">
+    <div className="h-screen flex flex-col bg-[#F3F5F8] overflow-hidden">
       {/* Header */}
-      <header className="bg-slate-800 text-white px-8 py-6 shadow-lg flex-shrink-0">
-        <h1 className="text-4xl font-bold tracking-wide capitalize">
+      <header className="bg-[#080E1A] text-white px-8 py-5 flex-shrink-0">
+        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 mb-2">Vikartavle</p>
+        <h1 className="text-5xl font-black tracking-tight capitalize">
           {formatNorwegianDate(date)}
         </h1>
-        <p className="text-slate-300 text-lg mt-1">Vikartavle</p>
       </header>
 
       {/* Scalable content area */}
@@ -158,8 +158,8 @@ export default function DisplayBoard({
       {/* Main */}
       <main className="flex gap-4 p-5">
         {/* Absences card */}
-        <div className={`${hasDuties ? 'flex-[3]' : 'flex-1'} bg-white rounded-xl border border-slate-200 overflow-hidden flex flex-col shadow-sm`}>
-          <div className="bg-slate-700 text-white px-5 py-3 font-bold text-2xl">
+        <div className={`${hasDuties ? 'flex-[3]' : 'flex-1'} bg-white rounded-lg shadow-md overflow-hidden flex flex-col`}>
+          <div className="bg-[#080E1A] text-slate-400 px-5 py-2.5 font-bold text-xs uppercase tracking-[0.15em]">
             Vikartavle
           </div>
           {absences.length === 0 ? (
@@ -169,49 +169,49 @@ export default function DisplayBoard({
             </div>
           ) : (
             <div className="flex-1 overflow-x-auto">
-                <table className="w-full border-collapse text-2xl">
-                  <thead>
-                    <tr className="bg-slate-100 text-slate-600 border-b border-slate-200">
-                      <th className="text-left px-5 py-3 font-semibold w-28">Lærer</th>
-                      {periods.map((p) => (
-                        <th key={p} className="px-3 py-3 font-semibold text-center">{p}. time</th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100">
-                    {absences.map((absence) => {
-                      const rowPeriods = absence.num_periods ?? 6
-                      return (
-                        <tr key={absence.id}>
-                          <td className="px-5 py-3 font-bold text-slate-800 border-r border-slate-100">
-                            {absence.teacher_initials}
-                          </td>
-                          {periods.map((p) => {
-                            const active = p <= rowPeriods
-                            const text = active ? getSubText(absence.id, p) : null
-                            const cellStyle = !active
-                              ? { backgroundColor: '#f1f5f9', color: '#cbd5e1', borderColor: '#e2e8f0' }
-                              : text === '-'
-                              ? { backgroundColor: '#e2e8f0', color: '#64748b', borderColor: '#cbd5e1' }
-                              : text
-                              ? { backgroundColor: '#86efac', color: '#14532d', borderColor: '#4ade80' }
-                              : { backgroundColor: '#ef4444', color: '#ffffff', borderColor: '#dc2626' }
-                            return (
-                              <td key={p} className="px-2 py-2 text-center border-r border-slate-100 last:border-r-0">
-                                <div
-                                  className="inline-block w-full rounded-lg px-3 py-2.5 font-semibold border"
-                                  style={cellStyle}
-                                >
-                                  {active ? (text || '–') : ''}
-                                </div>
-                              </td>
-                            )
-                          })}
-                        </tr>
-                      )
-                    })}
-                  </tbody>
-                </table>
+              <table className="w-full border-collapse text-2xl">
+                <thead>
+                  <tr className="bg-[#080E1A] text-white">
+                    <th className="text-left px-5 py-3 font-semibold text-xs uppercase tracking-[0.1em] text-slate-400 w-28">Lærer</th>
+                    {periods.map((p) => (
+                      <th key={p} className="px-3 py-3 font-semibold text-xs uppercase tracking-[0.1em] text-slate-400 text-center">{p}. time</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {absences.map((absence) => {
+                    const rowPeriods = absence.num_periods ?? 6
+                    return (
+                      <tr key={absence.id}>
+                        <td className="px-5 py-4 font-black text-3xl text-white bg-[#080E1A] border-r border-[#1E293B]">
+                          {absence.teacher_initials}
+                        </td>
+                        {periods.map((p) => {
+                          const active = p <= rowPeriods
+                          const text = active ? getSubText(absence.id, p) : null
+                          const cellStyle = !active
+                            ? { backgroundColor: '#F8FAFC', color: '#CBD5E1' }
+                            : text === '-'
+                            ? { backgroundColor: '#E2E8F0', color: '#94A3B8' }
+                            : text
+                            ? { backgroundColor: '#16A34A', color: '#ffffff' }
+                            : { backgroundColor: '#DC2626', color: '#ffffff' }
+                          return (
+                            <td key={p} className="px-1.5 py-2 border-r border-slate-100 last:border-r-0">
+                              <div
+                                className="w-full rounded-md px-2 py-3 font-bold text-2xl text-center"
+                                style={cellStyle}
+                              >
+                                {active ? (text || '–') : ''}
+                              </div>
+                            </td>
+                          )
+                        })}
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table>
             </div>
           )}
         </div>
@@ -220,8 +220,8 @@ export default function DisplayBoard({
         {hasDuties && (
           <div className="flex-[1] flex flex-col gap-4 min-w-0">
             {/* Vakter */}
-            <div className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
-              <div className="bg-slate-700 text-white px-4 py-3 font-bold text-2xl text-center tracking-wide">
+            <div className="bg-white rounded-lg shadow-md overflow-hidden">
+              <div className="bg-[#080E1A] text-white px-4 py-3 font-bold text-sm uppercase tracking-[0.08em] text-center">
                 Vakter
               </div>
               {duties.length === 0 ? (
@@ -230,16 +230,16 @@ export default function DisplayBoard({
                 <div style={{ display: 'grid', gridTemplateColumns: 'max-content max-content 1fr' }}>
                   {duties.map((duty) => {
                     const assignedStyle = duty.assigned_to === '-'
-                      ? { backgroundColor: '#e2e8f0', color: '#64748b' }
+                      ? { backgroundColor: '#E2E8F0', color: '#94A3B8' }
                       : duty.assigned_to
-                      ? { backgroundColor: '#86efac', color: '#14532d' }
-                      : { backgroundColor: '#ef4444', color: '#ffffff' }
+                      ? { backgroundColor: '#16A34A', color: '#ffffff' }
+                      : { backgroundColor: '#DC2626', color: '#ffffff' }
                     return (
                       <Fragment key={duty.id}>
                         <div className="pl-4 pr-2 py-3 font-bold text-slate-800 text-xl whitespace-nowrap border-b border-slate-100 flex items-center">{duty.area}</div>
                         <div className="pl-2 pr-4 py-3 font-bold text-slate-800 text-xl whitespace-nowrap border-b border-slate-100 flex items-center">{duty.time_slot}</div>
                         <div className="border-b border-slate-100 flex items-center">
-                          <div className="flex-1 mx-3 my-2 rounded-lg px-3 py-2.5 font-bold text-center text-xl" style={assignedStyle}>
+                          <div className="flex-1 mx-3 my-2 rounded-md px-3 py-2.5 font-bold text-center text-xl" style={assignedStyle}>
                             {duty.assigned_to || '–'}
                           </div>
                         </div>
@@ -251,8 +251,8 @@ export default function DisplayBoard({
             </div>
 
             {/* Bussvakter */}
-            <div className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
-              <div className="bg-slate-700 text-white px-4 py-3 font-bold text-2xl text-center tracking-wide">
+            <div className="bg-white rounded-lg shadow-md overflow-hidden">
+              <div className="bg-[#080E1A] text-white px-4 py-3 font-bold text-sm uppercase tracking-[0.08em] text-center">
                 Bussvakter
               </div>
               {busDuties.length === 0 ? (
@@ -261,16 +261,16 @@ export default function DisplayBoard({
                 <div style={{ display: 'grid', gridTemplateColumns: 'max-content max-content 1fr' }}>
                   {busDuties.map((duty) => {
                     const assignedStyle = duty.assigned_to === '-'
-                      ? { backgroundColor: '#e2e8f0', color: '#64748b' }
+                      ? { backgroundColor: '#E2E8F0', color: '#94A3B8' }
                       : duty.assigned_to
-                      ? { backgroundColor: '#86efac', color: '#14532d' }
-                      : { backgroundColor: '#ef4444', color: '#ffffff' }
+                      ? { backgroundColor: '#16A34A', color: '#ffffff' }
+                      : { backgroundColor: '#DC2626', color: '#ffffff' }
                     return (
                       <Fragment key={duty.id}>
                         <div className="pl-4 pr-2 py-3 font-bold text-slate-800 text-xl whitespace-nowrap border-b border-slate-100 flex items-center">{duty.direction || ''}</div>
                         <div className="pl-2 pr-4 py-3 font-bold text-slate-800 text-xl whitespace-nowrap border-b border-slate-100 flex items-center">{duty.time_label}</div>
                         <div className="border-b border-slate-100 flex items-center">
-                          <div className="flex-1 mx-3 my-2 rounded-lg px-3 py-2.5 font-bold text-center text-xl" style={assignedStyle}>
+                          <div className="flex-1 mx-3 my-2 rounded-md px-3 py-2.5 font-bold text-center text-xl" style={assignedStyle}>
                             {duty.assigned_to || '–'}
                           </div>
                         </div>
@@ -288,8 +288,8 @@ export default function DisplayBoard({
       {(board?.info_text || absences.length > 0 || board?.extra_absent || board?.extra_partial_day) && (
         <footer className="px-5 pb-5 flex gap-4">
           {/* Informasjon card: 2/3 */}
-          <div className="flex-[3] bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
-            <div className="bg-slate-700 text-white px-4 py-3 font-bold text-xl tracking-wide">
+          <div className="flex-[3] bg-white rounded-lg shadow-md overflow-hidden">
+            <div className="bg-[#080E1A] text-slate-400 px-4 py-2.5 text-xs font-bold uppercase tracking-[0.15em]">
               Informasjon
             </div>
             <div className="px-5 py-4">
@@ -301,8 +301,8 @@ export default function DisplayBoard({
           </div>
 
           {/* Fravær & Deler av dag card: 1/3 */}
-          <div className="flex-[1] bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm flex flex-col">
-            <div className="bg-slate-700 text-white px-4 py-3 font-bold text-xl tracking-wide text-center">
+          <div className="flex-[1] bg-white rounded-lg shadow-md overflow-hidden flex flex-col">
+            <div className="bg-[#080E1A] text-slate-400 px-4 py-2.5 text-xs font-bold uppercase tracking-[0.15em] text-center">
               Oversikt
             </div>
             <div className="flex-1 divide-y divide-slate-100">
