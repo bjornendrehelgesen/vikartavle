@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { formatNorwegianDate } from '@/lib/date'
 import type { Board, Absence, Substitution, BoardDuty, BoardBusDuty } from '@/lib/supabase/types'
@@ -32,6 +32,25 @@ export default function DisplayBoard({
   const [busDuties, setBusDuties] = useState<BoardBusDuty[]>(initialBusDuties)
 
   const supabase = createClient()
+
+  const rightContainerRef = useRef<HTMLDivElement>(null)
+  const rightContentRef = useRef<HTMLDivElement>(null)
+  const [rightScale, setRightScale] = useState(1)
+
+  useEffect(() => {
+    function compute() {
+      const c = rightContainerRef.current
+      const n = rightContentRef.current
+      if (!c || !n) return
+      const ratio = c.clientHeight / n.scrollHeight
+      setRightScale(ratio < 1 ? ratio : 1)
+    }
+    compute()
+    const ro = new ResizeObserver(compute)
+    if (rightContainerRef.current) ro.observe(rightContainerRef.current)
+    if (rightContentRef.current) ro.observe(rightContentRef.current)
+    return () => ro.disconnect()
+  }, [duties, busDuties, absences, board])
 
   useEffect(() => {
     async function refetchAll(boardId: string) {
@@ -226,7 +245,20 @@ export default function DisplayBoard({
 
         {/* Right: Vakter, Bussvakter, Oversikt */}
         {showRightPanel && (
-          <div style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+          <div ref={rightContainerRef} style={{ position: 'relative', overflow: 'hidden' }}>
+          <div
+            ref={rightContentRef}
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              transformOrigin: 'top left',
+              transform: `scale(${rightScale})`,
+              width: rightScale < 1 ? `${(1 / rightScale) * 100}%` : '100%',
+              display: 'flex',
+              flexDirection: 'column',
+            }}
+          >
 
             {duties.length > 0 && (
               <div style={{ padding: '28px 36px', borderBottom: DIVIDER, flexShrink: 0 }}>
@@ -297,6 +329,7 @@ export default function DisplayBoard({
                 </div>
               </div>
             )}
+          </div>
           </div>
         )}
       </div>
