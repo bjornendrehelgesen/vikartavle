@@ -26,6 +26,7 @@ export default function DisplayBoard({
   date,
 }: Props) {
   const [board, setBoard] = useState<Board | null>(initialBoard)
+  const [lastUpdated, setLastUpdated] = useState<Date>(new Date())
   const [absences, setAbsences] = useState<Absence[]>(initialAbsences)
   const [substitutions, setSubstitutions] = useState<Substitution[]>(initialSubstitutions)
   const [duties, setDuties] = useState<BoardDuty[]>(initialDuties)
@@ -95,6 +96,7 @@ export default function DisplayBoard({
       } else {
         setSubstitutions([])
       }
+      setLastUpdated(new Date())
     }
 
     async function refetchBoard() {
@@ -102,6 +104,7 @@ export default function DisplayBoard({
       const b = data as Board | null
       setBoard(b)
       if (b) refetchAll(b.id)
+      else setLastUpdated(new Date())
     }
 
     const boardId = board?.id
@@ -168,13 +171,23 @@ export default function DisplayBoard({
     <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', width: '100vw', backgroundColor: '#F7F5F2', color: '#1A1A1A', overflow: 'hidden' }}>
 
       {/* Header */}
-      <header style={{ padding: '32px 48px 26px', borderBottom: DIVIDER, flexShrink: 0 }}>
-        <p style={{ fontSize: '11px', fontWeight: 500, letterSpacing: '0.22em', textTransform: 'uppercase', color: '#AAA', marginBottom: '6px' }}>
-          Vikartavle
-        </p>
-        <h1 style={{ fontSize: '52px', fontWeight: 300, letterSpacing: '-0.02em', color: '#1A1A1A', lineHeight: 1.1 }}>
-          {formatNorwegianDate(date)}
-        </h1>
+      <header style={{ padding: '32px 48px 26px', borderBottom: DIVIDER, flexShrink: 0, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+        <div>
+          <p style={{ fontSize: '11px', fontWeight: 500, letterSpacing: '0.22em', textTransform: 'uppercase', color: '#AAA', marginBottom: '6px' }}>
+            Vikartavle
+          </p>
+          <h1 style={{ fontSize: '52px', fontWeight: 300, letterSpacing: '-0.02em', color: '#1A1A1A', lineHeight: 1.1 }}>
+            {formatNorwegianDate(date)}
+          </h1>
+        </div>
+        <div style={{ textAlign: 'right', paddingTop: '6px' }}>
+          <p style={{ fontSize: '10px', fontWeight: 500, letterSpacing: '0.22em', textTransform: 'uppercase', color: '#CCC', marginBottom: '4px' }}>
+            Sist oppdatert
+          </p>
+          <p style={{ fontSize: '18px', fontWeight: 300, color: '#BBB', fontVariantNumeric: 'tabular-nums' }}>
+            {lastUpdated.toLocaleTimeString('nb-NO', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+          </p>
+        </div>
       </header>
 
       {/* Body */}
