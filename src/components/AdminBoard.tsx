@@ -577,7 +577,7 @@ export default function AdminBoard({
           </div>
 
           {/* Right: Duties (1/3) */}
-          <div className="flex-[1] min-w-0 flex flex-col gap-3">
+          <div className="flex-[1] min-w-0 flex flex-row gap-3">
             {/* Vakter */}
             <div className="bg-white rounded-xl border border-slate-200 overflow-hidden flex flex-col">
               <div className="bg-slate-700 text-white px-3 py-3 font-semibold text-sm text-center">
