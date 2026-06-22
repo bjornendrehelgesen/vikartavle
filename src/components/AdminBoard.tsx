@@ -412,9 +412,119 @@ export default function AdminBoard({
       <main className="flex-1 p-4 flex flex-col gap-4">
         {/* Main area: absences (2/3) + duties (1/3) */}
         <div className="flex flex-col md:flex-row gap-4 items-start">
-          {/* Left: Absences table */}
+          {/* Left: Absences */}
           <div className="flex-[2] min-w-0">
-            <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
+
+            {/* Mobile: card layout */}
+            <div className="md:hidden flex flex-col gap-3">
+              {absences.map((absence) => {
+                const rowPeriods = absence.num_periods ?? 6
+                const periods = Array.from({ length: rowPeriods }, (_, i) => i + 1)
+                return (
+                  <div key={absence.id} className="bg-white rounded-xl border border-slate-200 overflow-hidden">
+                    {/* Card header */}
+                    <div className="flex items-center gap-2 px-3 py-2 bg-slate-700 text-white">
+                      <input
+                        type="checkbox"
+                        checked={absence.is_absent ?? true}
+                        onChange={() => toggleAbsent(absence)}
+                        className="w-5 h-5 accent-slate-400 cursor-pointer flex-shrink-0"
+                      />
+                      <div className="flex-1 min-w-0">
+                        {editingInitialsId === absence.id ? (
+                          <input
+                            autoFocus
+                            type="text"
+                            value={editingInitialsValue}
+                            onChange={(e) => setEditingInitialsValue(e.target.value.toUpperCase())}
+                            onBlur={() => saveInitials(absence)}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') saveInitials(absence)
+                              if (e.key === 'Escape') setEditingInitialsId(null)
+                            }}
+                            className="border border-slate-400 rounded px-2 py-0.5 font-bold text-slate-800 bg-white focus:outline-none text-base w-24"
+                          />
+                        ) : (
+                          <button
+                            onClick={() => { setEditingInitialsId(absence.id); setEditingInitialsValue(absence.teacher_initials) }}
+                            className="font-bold text-white text-base"
+                          >
+                            {absence.teacher_initials}
+                          </button>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-1 flex-shrink-0">
+                        <button
+                          onClick={() => changeAbsencePeriods(absence, -1)}
+                          disabled={rowPeriods <= 1}
+                          className="w-7 h-7 flex items-center justify-center rounded bg-slate-600 hover:bg-red-600 disabled:opacity-30 text-white text-base font-bold transition-colors"
+                        >−</button>
+                        <span className="text-xs font-semibold w-4 text-center">{rowPeriods}t</span>
+                        <button
+                          onClick={() => changeAbsencePeriods(absence, 1)}
+                          className="w-7 h-7 flex items-center justify-center rounded bg-slate-600 hover:bg-green-600 text-white text-base font-bold transition-colors"
+                        >+</button>
+                      </div>
+                      <button
+                        onClick={() => deleteAbsence(absence.id)}
+                        className="text-slate-400 hover:text-red-400 transition-colors flex-shrink-0 text-lg leading-none ml-1"
+                      >✕</button>
+                    </div>
+                    {/* Period grid */}
+                    <div className="grid grid-cols-3 gap-2 p-3">
+                      {periods.map((p) => {
+                        const key = `${absence.id}-${p}`
+                        const value = cellValues.get(key) ?? ''
+                        const isFocused = focusedCell === key
+                        const isDash = value === '-'
+                        const wrapperStyle = isFocused || isDash
+                          ? { backgroundColor: '#f1f5f9', borderColor: '#94a3b8' }
+                          : value
+                          ? { backgroundColor: '#86efac', borderColor: '#4ade80' }
+                          : { backgroundColor: '#ef4444', borderColor: '#dc2626' }
+                        const inputTextClass = !value
+                          ? 'text-white placeholder-red-200'
+                          : 'text-slate-700 placeholder-slate-300'
+                        return (
+                          <div key={p}>
+                            <div className="text-xs text-slate-400 text-center mb-1">{p}. time</div>
+                            <div className="border rounded transition-colors" style={wrapperStyle}>
+                              <input
+                                type="text"
+                                data-cell={key}
+                                value={value}
+                                onChange={(e) => handleCellChange(absence.id, p, e.target.value)}
+                                onFocus={() => setFocusedCell(key)}
+                                onBlur={() => setFocusedCell(null)}
+                                placeholder="—"
+                                className={`w-full text-center bg-transparent px-1 py-2 text-sm focus:outline-none ${inputTextClass}`}
+                              />
+                            </div>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </div>
+                )
+              })}
+              {/* Draft card */}
+              <div className="bg-white rounded-xl border border-slate-200 px-3 py-3">
+                <input
+                  type="text"
+                  value={draftInitials}
+                  onChange={(e) => setDraftInitials(e.target.value.toUpperCase())}
+                  onKeyDown={async (e) => {
+                    if (e.key === 'Enter') submitDraft()
+                  }}
+                  onBlur={submitDraft}
+                  placeholder="Legg til lærer…"
+                  className="w-full font-bold text-slate-500 placeholder-slate-300 focus:outline-none focus:placeholder-slate-400 bg-transparent text-sm"
+                />
+              </div>
+            </div>
+
+            {/* Desktop: table layout */}
+            <div className="hidden md:block bg-white rounded-xl border border-slate-200 overflow-hidden">
               <div className="overflow-x-auto" style={{ WebkitOverflowScrolling: 'touch' }}>
                 <table className="w-full border-collapse">
                   <thead>
@@ -538,7 +648,7 @@ export default function AdminBoard({
                           </tr>
                         )
                     })}
-                    {/* Draft row — grayed out, not saved to DB until blur/Enter */}
+                    {/* Draft row */}
                     <tr className="hover:bg-slate-50 transition-colors">
                       <td className="px-2 py-2 border-r border-slate-100" />
                       <td className="px-3 py-2 border-r border-slate-100">
