@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useState, Fragment } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { formatNorwegianDate } from '@/lib/date'
 import type { Board, Absence, Substitution, BoardDuty, BoardBusDuty } from '@/lib/supabase/types'
@@ -132,15 +132,19 @@ export default function DisplayBoard({
   const periods = Array.from({ length: maxPeriods }, (_, i) => i + 1)
 
   const hasDuties = duties.length > 0 || busDuties.length > 0
+  const hasRightPanel = hasDuties || absences.length > 0
 
   return (
-    <div className="h-screen flex flex-col bg-[#F3F5F8] overflow-hidden">
-      {/* Header */}
-      <header className="bg-[#080E1A] text-white px-8 py-5 flex-shrink-0">
-        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 mb-2">Vikartavle</p>
-        <h1 className="text-5xl font-black tracking-tight capitalize">
+    <div className="h-screen flex flex-col overflow-hidden" style={{ backgroundColor: '#F7F5F2', color: '#1A1A1A' }}>
+      {/* Hero header */}
+      <header className="flex-shrink-0 px-10 pt-8 pb-6" style={{ borderBottom: '1px solid #E8E4E0' }}>
+        <p style={{ fontSize: '0.6rem', fontWeight: 600, letterSpacing: '0.25em', textTransform: 'uppercase', color: '#C9A96E', marginBottom: '0.75rem' }}>
+          Vikartavle
+        </p>
+        <h1 style={{ fontSize: '5rem', fontWeight: 300, color: '#1A1A1A', letterSpacing: '-0.02em', lineHeight: 1 }}>
           {formatNorwegianDate(date)}
         </h1>
+        <div style={{ marginTop: '1rem', height: '1px', width: '3rem', backgroundColor: '#C9A96E' }} />
       </header>
 
       {/* Scalable content area */}
@@ -154,180 +158,173 @@ export default function DisplayBoard({
             width: `${(1 / pageScale) * 100}%`,
           }}
         >
+          <main className="flex px-10 pt-8 pb-4 gap-0">
+            {/* Absence table */}
+            <div className={hasRightPanel ? 'flex-[3] pr-12' : 'flex-1'}>
+              {absences.length === 0 ? (
+                <div className="py-20 text-center">
+                  <p style={{ fontSize: '2.5rem', fontWeight: 300, color: '#4A7C59' }}>Ingen fravær i dag</p>
+                  <p style={{ fontSize: '1.25rem', fontWeight: 300, color: '#999', marginTop: '0.5rem' }}>God arbeidsdag</p>
+                </div>
+              ) : (
+                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                  <thead>
+                    <tr>
+                      <th style={{ textAlign: 'left', paddingBottom: '0.75rem', paddingRight: '2rem', fontSize: '0.6rem', fontWeight: 600, letterSpacing: '0.2em', textTransform: 'uppercase', color: '#999', borderBottom: '1px solid #C9A96E' }}>
+                        Lærer
+                      </th>
+                      {periods.map((p) => (
+                        <th key={p} style={{ textAlign: 'center', paddingBottom: '0.75rem', paddingLeft: '2px', paddingRight: '2px', fontSize: '0.6rem', fontWeight: 600, letterSpacing: '0.2em', textTransform: 'uppercase', color: '#999', borderBottom: '1px solid #C9A96E' }}>
+                          {p}. time
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {absences.map((absence) => {
+                      const rowPeriods = absence.num_periods ?? 6
+                      return (
+                        <tr key={absence.id} style={{ borderBottom: '1px solid #E8E4E0' }}>
+                          <td style={{ fontSize: '1.875rem', fontWeight: 700, color: '#1A1A1A', padding: '1.5rem 2rem 1.5rem 0', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>
+                            {absence.teacher_initials}
+                          </td>
+                          {periods.map((p) => {
+                            const active = p <= rowPeriods
+                            const text = active ? getSubText(absence.id, p) : null
 
-      {/* Main */}
-      <main className="flex gap-4 p-5">
-        {/* Absences card */}
-        <div className={`${hasDuties ? 'flex-[3]' : 'flex-1'} bg-white rounded-lg shadow-md overflow-hidden flex flex-col`}>
-          <div className="bg-[#080E1A] text-slate-300 px-5 py-2.5 font-bold text-xs uppercase tracking-[0.15em]">
-            Vikartavle
-          </div>
-          {absences.length === 0 ? (
-            <div className="flex-1 flex flex-col items-center justify-center text-center p-10">
-              <p className="text-4xl font-semibold text-green-700">Ingen fravær registrert i dag</p>
-              <p className="text-green-500 text-2xl mt-3">God arbeidsdag!</p>
-            </div>
-          ) : (
-            <div className="flex-1 overflow-x-auto">
-              <table className="w-full border-collapse text-2xl">
-                <thead>
-                  <tr className="bg-[#080E1A] text-white">
-                    <th className="text-left px-5 py-3 font-semibold text-xs uppercase tracking-[0.1em] text-slate-400 w-28">Lærer</th>
-                    {periods.map((p) => (
-                      <th key={p} className="px-3 py-3 font-semibold text-xs uppercase tracking-[0.1em] text-slate-400 text-center">{p}. time</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100">
-                  {absences.map((absence) => {
-                    const rowPeriods = absence.num_periods ?? 6
-                    return (
-                      <tr key={absence.id}>
-                        <td className="px-5 py-4 font-black text-3xl text-white bg-[#080E1A] border-r border-[#1E293B]">
-                          {absence.teacher_initials}
-                        </td>
-                        {periods.map((p) => {
-                          const active = p <= rowPeriods
-                          const text = active ? getSubText(absence.id, p) : null
-                          const cellStyle = !active
-                            ? { backgroundColor: '#F8FAFC', color: '#CBD5E1' }
-                            : text === '-'
-                            ? { backgroundColor: '#E2E8F0', color: '#94A3B8' }
-                            : text
-                            ? { backgroundColor: '#16A34A', color: '#ffffff' }
-                            : { backgroundColor: '#DC2626', color: '#ffffff' }
-                          return (
-                            <td key={p} className="px-1.5 py-2 border-r border-slate-100 last:border-r-0">
-                              <div
-                                className="w-full rounded-md px-2 py-3 font-bold text-2xl text-center"
-                                style={cellStyle}
+                            let bg: string, cellColor: string, label: string
+                            if (!active) {
+                              bg = 'transparent'; cellColor = 'transparent'; label = ''
+                            } else if (text === '-') {
+                              bg = '#EBEBEB'; cellColor = '#C5C0BB'; label = '—'
+                            } else if (text) {
+                              bg = '#4A7C59'; cellColor = '#FFFFFF'; label = text
+                            } else {
+                              bg = '#D4846A'; cellColor = '#E8A892'; label = '—'
+                            }
+
+                            return (
+                              <td
+                                key={p}
+                                style={{
+                                  backgroundColor: bg,
+                                  padding: '0 2px',
+                                  verticalAlign: 'middle',
+                                }}
                               >
-                                {active ? (text || '–') : ''}
-                              </div>
-                            </td>
-                          )
-                        })}
-                      </tr>
-                    )
-                  })}
-                </tbody>
-              </table>
+                                <div style={{
+                                  fontSize: '1.5rem',
+                                  fontWeight: 700,
+                                  color: cellColor,
+                                  textAlign: 'center',
+                                  padding: '1.5rem 0.5rem',
+                                }}>
+                                  {label}
+                                </div>
+                              </td>
+                            )
+                          })}
+                        </tr>
+                      )
+                    })}
+                  </tbody>
+                </table>
+              )}
             </div>
+
+            {/* Right panel: Vakter, Bussvakter, Oversikt */}
+            {hasRightPanel && (
+              <div className="flex-[1] flex flex-col gap-8 min-w-0" style={{ borderLeft: '1px solid #E8E4E0', paddingLeft: '2.5rem' }}>
+                {duties.length > 0 && (
+                  <section>
+                    <p style={{ fontSize: '0.6rem', fontWeight: 600, letterSpacing: '0.2em', textTransform: 'uppercase', color: '#999', marginBottom: '0.75rem' }}>
+                      Vakter
+                    </p>
+                    <div>
+                      {duties.map((duty) => {
+                        const hasName = duty.assigned_to && duty.assigned_to !== '-'
+                        return (
+                          <div key={duty.id} style={{ display: 'flex', alignItems: 'center', padding: '0.75rem 0', borderBottom: '1px solid #E8E4E0' }}>
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                              <span style={{ fontSize: '1rem', fontWeight: 600, color: '#1A1A1A' }}>{duty.area}</span>
+                              {duty.time_slot && <span style={{ fontSize: '0.8rem', color: '#999', marginLeft: '0.5rem' }}>{duty.time_slot}</span>}
+                            </div>
+                            <span style={{ fontSize: '1.125rem', fontWeight: 700, color: hasName ? '#4A7C59' : '#D4846A', marginLeft: '1rem', flexShrink: 0 }}>
+                              {duty.assigned_to || '–'}
+                            </span>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </section>
+                )}
+
+                {busDuties.length > 0 && (
+                  <section>
+                    <p style={{ fontSize: '0.6rem', fontWeight: 600, letterSpacing: '0.2em', textTransform: 'uppercase', color: '#999', marginBottom: '0.75rem' }}>
+                      Bussvakter
+                    </p>
+                    <div>
+                      {busDuties.map((duty) => {
+                        const hasName = duty.assigned_to && duty.assigned_to !== '-'
+                        return (
+                          <div key={duty.id} style={{ display: 'flex', alignItems: 'center', padding: '0.75rem 0', borderBottom: '1px solid #E8E4E0' }}>
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                              <span style={{ fontSize: '1rem', fontWeight: 600, color: '#1A1A1A' }}>{duty.direction || ''}</span>
+                              {duty.time_label && <span style={{ fontSize: '0.8rem', color: '#999', marginLeft: '0.5rem' }}>{duty.time_label}</span>}
+                            </div>
+                            <span style={{ fontSize: '1.125rem', fontWeight: 700, color: hasName ? '#4A7C59' : '#D4846A', marginLeft: '1rem', flexShrink: 0 }}>
+                              {duty.assigned_to || '–'}
+                            </span>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </section>
+                )}
+
+                {(absences.length > 0 || board?.extra_absent || board?.extra_partial_day) && (
+                  <section>
+                    <p style={{ fontSize: '0.6rem', fontWeight: 600, letterSpacing: '0.2em', textTransform: 'uppercase', color: '#999', marginBottom: '0.75rem' }}>
+                      Oversikt
+                    </p>
+                    <div style={{ borderTop: '1px solid #E8E4E0' }}>
+                      <div style={{ padding: '0.75rem 0', borderBottom: '1px solid #E8E4E0' }}>
+                        <p style={{ fontSize: '0.55rem', fontWeight: 600, letterSpacing: '0.15em', textTransform: 'uppercase', color: '#C5C0BB', marginBottom: '0.25rem' }}>Fravær</p>
+                        <p style={{ fontSize: '0.9rem', fontWeight: 500, color: '#1A1A1A', lineHeight: 1.5 }}>
+                          {[
+                            ...absences.filter((a) => a.is_absent !== false).map((a) => a.teacher_initials),
+                            ...(board?.extra_absent ?? '').split('\n').map((s) => s.trim()).filter(Boolean),
+                          ].join(', ') || '–'}
+                        </p>
+                      </div>
+                      <div style={{ padding: '0.75rem 0' }}>
+                        <p style={{ fontSize: '0.55rem', fontWeight: 600, letterSpacing: '0.15em', textTransform: 'uppercase', color: '#C5C0BB', marginBottom: '0.25rem' }}>Deler av dag</p>
+                        <p style={{ fontSize: '0.9rem', fontWeight: 500, color: '#1A1A1A', lineHeight: 1.5 }}>
+                          {[
+                            ...absences.filter((a) => a.is_absent === false).map((a) => a.teacher_initials),
+                            ...(board?.extra_partial_day ?? '').split('\n').map((s) => s.trim()).filter(Boolean),
+                          ].join(', ') || '–'}
+                        </p>
+                      </div>
+                    </div>
+                  </section>
+                )}
+              </div>
+            )}
+          </main>
+
+          {/* Informasjon — full-width bottom strip */}
+          {board?.info_text && (
+            <footer className="px-10 py-6 mt-4" style={{ borderTop: '1px solid #E8E4E0' }}>
+              <p style={{ fontSize: '0.6rem', fontWeight: 600, letterSpacing: '0.2em', textTransform: 'uppercase', color: '#999', marginBottom: '0.5rem' }}>
+                Informasjon
+              </p>
+              <p style={{ fontSize: '1.25rem', fontStyle: 'italic', fontWeight: 300, color: '#555', lineHeight: 1.6, whiteSpace: 'pre-wrap' }}>
+                {board.info_text}
+              </p>
+            </footer>
           )}
-        </div>
-
-        {/* Duties: stacked cards */}
-        {hasDuties && (
-          <div className="flex-[1] flex flex-col gap-4 min-w-0">
-            {/* Vakter */}
-            <div className="bg-white rounded-lg shadow-md overflow-hidden">
-              <div className="bg-[#080E1A] text-white px-4 py-3 font-bold text-sm uppercase tracking-[0.08em] text-center">
-                Vakter
-              </div>
-              {duties.length === 0 ? (
-                <div className="py-6 text-center text-slate-300 text-xl">–</div>
-              ) : (
-                <div style={{ display: 'grid', gridTemplateColumns: 'max-content max-content 1fr' }}>
-                  {duties.map((duty) => {
-                    const assignedStyle = duty.assigned_to === '-'
-                      ? { backgroundColor: '#E2E8F0', color: '#94A3B8' }
-                      : duty.assigned_to
-                      ? { backgroundColor: '#16A34A', color: '#ffffff' }
-                      : { backgroundColor: '#DC2626', color: '#ffffff' }
-                    return (
-                      <Fragment key={duty.id}>
-                        <div className="pl-4 pr-2 py-3 font-bold text-slate-800 text-xl whitespace-nowrap border-b border-slate-100 flex items-center">{duty.area}</div>
-                        <div className="pl-2 pr-4 py-3 font-bold text-slate-800 text-xl whitespace-nowrap border-b border-slate-100 flex items-center">{duty.time_slot}</div>
-                        <div className="border-b border-slate-100 flex items-center">
-                          <div className="flex-1 mx-3 my-2 rounded-md px-3 py-2.5 font-bold text-center text-xl" style={assignedStyle}>
-                            {duty.assigned_to || '–'}
-                          </div>
-                        </div>
-                      </Fragment>
-                    )
-                  })}
-                </div>
-              )}
-            </div>
-
-            {/* Bussvakter */}
-            <div className="bg-white rounded-lg shadow-md overflow-hidden">
-              <div className="bg-[#080E1A] text-white px-4 py-3 font-bold text-sm uppercase tracking-[0.08em] text-center">
-                Bussvakter
-              </div>
-              {busDuties.length === 0 ? (
-                <div className="py-6 text-center text-slate-300 text-xl">–</div>
-              ) : (
-                <div style={{ display: 'grid', gridTemplateColumns: 'max-content max-content 1fr' }}>
-                  {busDuties.map((duty) => {
-                    const assignedStyle = duty.assigned_to === '-'
-                      ? { backgroundColor: '#E2E8F0', color: '#94A3B8' }
-                      : duty.assigned_to
-                      ? { backgroundColor: '#16A34A', color: '#ffffff' }
-                      : { backgroundColor: '#DC2626', color: '#ffffff' }
-                    return (
-                      <Fragment key={duty.id}>
-                        <div className="pl-4 pr-2 py-3 font-bold text-slate-800 text-xl whitespace-nowrap border-b border-slate-100 flex items-center">{duty.direction || ''}</div>
-                        <div className="pl-2 pr-4 py-3 font-bold text-slate-800 text-xl whitespace-nowrap border-b border-slate-100 flex items-center">{duty.time_label}</div>
-                        <div className="border-b border-slate-100 flex items-center">
-                          <div className="flex-1 mx-3 my-2 rounded-md px-3 py-2.5 font-bold text-center text-xl" style={assignedStyle}>
-                            {duty.assigned_to || '–'}
-                          </div>
-                        </div>
-                      </Fragment>
-                    )
-                  })}
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-      </main>
-
-      {/* Footer: info (2/3) + absence summary (1/3) */}
-      {(board?.info_text || absences.length > 0 || board?.extra_absent || board?.extra_partial_day) && (
-        <footer className="px-5 pb-5 flex gap-4">
-          {/* Informasjon card: 2/3 */}
-          <div className="flex-[3] bg-white rounded-lg shadow-md overflow-hidden">
-            <div className="bg-[#080E1A] text-slate-300 px-4 py-2.5 text-xs font-bold uppercase tracking-[0.15em]">
-              Informasjon
-            </div>
-            <div className="px-5 py-4">
-              {board?.info_text
-                ? <p className="text-2xl text-slate-700 whitespace-pre-wrap leading-relaxed">{board.info_text}</p>
-                : <p className="text-slate-300 text-xl">–</p>
-              }
-            </div>
-          </div>
-
-          {/* Fravær & Deler av dag card: 1/3 */}
-          <div className="flex-[1] bg-white rounded-lg shadow-md overflow-hidden flex flex-col">
-            <div className="bg-[#080E1A] text-slate-300 px-4 py-2.5 text-xs font-bold uppercase tracking-[0.15em] text-center">
-              Oversikt
-            </div>
-            <div className="flex-1 divide-y divide-slate-100">
-              <div className="px-4 py-3">
-                <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Fravær</p>
-                <p className="text-xl font-semibold text-slate-700 leading-snug">
-                  {[
-                    ...absences.filter((a) => a.is_absent !== false).map((a) => a.teacher_initials),
-                    ...(board?.extra_absent ?? '').split('\n').map((s) => s.trim()).filter(Boolean),
-                  ].join(', ') || '–'}
-                </p>
-              </div>
-              <div className="px-4 py-3">
-                <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Deler av dag</p>
-                <p className="text-xl font-semibold text-slate-700 leading-snug">
-                  {[
-                    ...absences.filter((a) => a.is_absent === false).map((a) => a.teacher_initials),
-                    ...(board?.extra_partial_day ?? '').split('\n').map((s) => s.trim()).filter(Boolean),
-                  ].join(', ') || '–'}
-                </p>
-              </div>
-            </div>
-          </div>
-        </footer>
-      )}
 
         </div>{/* end pageContentRef */}
       </div>{/* end pageContainerRef */}
