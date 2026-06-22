@@ -37,6 +37,10 @@ export default function DisplayBoard({
   const rightContentRef = useRef<HTMLDivElement>(null)
   const [rightScale, setRightScale] = useState(1)
 
+  const leftContainerRef = useRef<HTMLDivElement>(null)
+  const leftContentRef = useRef<HTMLDivElement>(null)
+  const [leftScale, setLeftScale] = useState(1)
+
   useEffect(() => {
     function compute() {
       const c = rightContainerRef.current
@@ -51,6 +55,21 @@ export default function DisplayBoard({
     if (rightContentRef.current) ro.observe(rightContentRef.current)
     return () => ro.disconnect()
   }, [duties, busDuties, absences, board])
+
+  useEffect(() => {
+    function compute() {
+      const c = leftContainerRef.current
+      const n = leftContentRef.current
+      if (!c || !n) return
+      const ratio = c.clientHeight / n.scrollHeight
+      setLeftScale(ratio < 1 ? ratio : 1)
+    }
+    compute()
+    const ro = new ResizeObserver(compute)
+    if (leftContainerRef.current) ro.observe(leftContainerRef.current)
+    if (leftContentRef.current) ro.observe(leftContentRef.current)
+    return () => ro.disconnect()
+  }, [absences])
 
   useEffect(() => {
     async function refetchAll(boardId: string) {
@@ -162,16 +181,25 @@ export default function DisplayBoard({
       <div style={{ display: 'grid', gridTemplateColumns: showRightPanel ? '1fr 375px' : '1fr', flex: 1, minHeight: 0 }}>
 
         {/* Left: substitution table */}
-        <div style={{ padding: '30px 48px 32px', borderRight: showRightPanel ? DIVIDER : 'none', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+        <div ref={leftContainerRef} style={{ borderRight: showRightPanel ? DIVIDER : 'none', overflow: 'hidden', position: 'relative' }}>
 
           {absences.length === 0 ? (
-            <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '30px 48px' }}>
               <div style={{ textAlign: 'center' }}>
                 <p style={{ fontSize: '2rem', fontWeight: 300, color: '#4A7C59' }}>Ingen fravær i dag</p>
                 <p style={{ fontSize: '1rem', fontWeight: 300, color: '#AAA', marginTop: '0.5rem' }}>God arbeidsdag</p>
               </div>
             </div>
           ) : (
+            <div
+              ref={leftContentRef}
+              style={{
+                padding: '30px 48px 32px',
+                transformOrigin: 'top left',
+                transform: `scale(${leftScale})`,
+                width: leftScale < 1 ? `${(1 / leftScale) * 100}%` : '100%',
+              }}
+            >
             <>
               {/* Legend */}
               <div style={{ display: 'flex', gap: '20px', alignItems: 'center', marginBottom: '22px', flexShrink: 0 }}>
@@ -240,6 +268,7 @@ export default function DisplayBoard({
                 </tbody>
               </table>
             </>
+            </div>
           )}
         </div>
 
@@ -313,7 +342,7 @@ export default function DisplayBoard({
       {(board?.info_text || hasOversikt) && (
         <footer style={{ borderTop: DIVIDER, flexShrink: 0, display: 'flex' }}>
           {/* Info — matches left column width */}
-          <div style={{ flex: 1, padding: '34px 48px', display: 'flex', alignItems: 'center', gap: '20px' }}>
+          <div style={{ flex: 1, padding: '20px 48px 0', display: 'flex', alignItems: 'flex-start', gap: '20px' }}>
             {board?.info_text && (
               <>
                 <span style={{ fontSize: '10px', fontWeight: 500, letterSpacing: '0.22em', textTransform: 'uppercase', color: '#BBB', whiteSpace: 'nowrap' }}>Info</span>
@@ -323,7 +352,7 @@ export default function DisplayBoard({
           </div>
           {/* Oversikt — matches right column width */}
           {showRightPanel && hasOversikt && (
-            <div style={{ width: '375px', padding: '30px 36px', borderLeft: DIVIDER, display: 'flex', gap: '32px', alignItems: 'center', flexShrink: 0 }}>
+            <div style={{ width: '375px', padding: '20px 36px 0', borderLeft: DIVIDER, display: 'flex', gap: '32px', alignItems: 'flex-start', flexShrink: 0 }}>
               <div>
                 <p style={{ fontSize: '10px', fontWeight: 500, letterSpacing: '0.22em', textTransform: 'uppercase', color: '#BBB', marginBottom: '4px' }}>Fravær</p>
                 <p style={{ fontSize: '18px', fontWeight: 400, color: '#1A1A1A' }}>
