@@ -159,7 +159,7 @@ export default function DisplayBoard({
       <main className="flex gap-4 p-5">
         {/* Absences card */}
         <div className={`${hasDuties ? 'flex-[3]' : 'flex-1'} bg-white rounded-lg shadow-md overflow-hidden flex flex-col`}>
-          <div className="bg-[#080E1A] text-slate-400 px-5 py-2.5 font-bold text-xs uppercase tracking-[0.15em]">
+          <div className="bg-[#080E1A] text-slate-300 px-5 py-2.5 font-bold text-xs uppercase tracking-[0.15em]">
             Vikartavle
           </div>
           {absences.length === 0 ? (
@@ -289,7 +289,7 @@ export default function DisplayBoard({
         <footer className="px-5 pb-5 flex gap-4">
           {/* Informasjon card: 2/3 */}
           <div className="flex-[3] bg-white rounded-lg shadow-md overflow-hidden">
-            <div className="bg-[#080E1A] text-slate-400 px-4 py-2.5 text-xs font-bold uppercase tracking-[0.15em]">
+            <div className="bg-[#080E1A] text-slate-300 px-4 py-2.5 text-xs font-bold uppercase tracking-[0.15em]">
               Informasjon
             </div>
             <div className="px-5 py-4">
@@ -302,7 +302,7 @@ export default function DisplayBoard({
 
           {/* Fravær & Deler av dag card: 1/3 */}
           <div className="flex-[1] bg-white rounded-lg shadow-md overflow-hidden flex flex-col">
-            <div className="bg-[#080E1A] text-slate-400 px-4 py-2.5 text-xs font-bold uppercase tracking-[0.15em] text-center">
+            <div className="bg-[#080E1A] text-slate-300 px-4 py-2.5 text-xs font-bold uppercase tracking-[0.15em] text-center">
               Oversikt
             </div>
             <div className="flex-1 divide-y divide-slate-100">
