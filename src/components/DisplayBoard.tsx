@@ -236,8 +236,8 @@ export default function DisplayBoard({
                       : { backgroundColor: '#ef4444', color: '#ffffff' }
                     return (
                       <Fragment key={duty.id}>
-                        <div className="pl-4 pr-2 py-3 font-bold text-slate-800 text-xl whitespace-nowrap border-b border-slate-100">{duty.area}</div>
-                        <div className="pl-2 pr-4 py-3 font-bold text-slate-800 text-xl whitespace-nowrap border-b border-slate-100">{duty.time_slot}</div>
+                        <div className="pl-4 pr-2 py-3 font-bold text-slate-800 text-xl whitespace-nowrap border-b border-slate-100 flex items-center">{duty.area}</div>
+                        <div className="pl-2 pr-4 py-3 font-bold text-slate-800 text-xl whitespace-nowrap border-b border-slate-100 flex items-center">{duty.time_slot}</div>
                         <div className="border-b border-slate-100 flex items-center">
                           <div className="flex-1 mx-3 my-2 rounded-lg px-3 py-2.5 font-bold text-center text-xl" style={assignedStyle}>
                             {duty.assigned_to || '–'}
@@ -267,8 +267,8 @@ export default function DisplayBoard({
                       : { backgroundColor: '#ef4444', color: '#ffffff' }
                     return (
                       <Fragment key={duty.id}>
-                        <div className="pl-4 pr-2 py-3 font-bold text-slate-800 text-xl whitespace-nowrap border-b border-slate-100">{duty.direction || ''}</div>
-                        <div className="pl-2 pr-4 py-3 font-bold text-slate-800 text-xl whitespace-nowrap border-b border-slate-100">{duty.time_label}</div>
+                        <div className="pl-4 pr-2 py-3 font-bold text-slate-800 text-xl whitespace-nowrap border-b border-slate-100 flex items-center">{duty.direction || ''}</div>
+                        <div className="pl-2 pr-4 py-3 font-bold text-slate-800 text-xl whitespace-nowrap border-b border-slate-100 flex items-center">{duty.time_label}</div>
                         <div className="border-b border-slate-100 flex items-center">
                           <div className="flex-1 mx-3 my-2 rounded-lg px-3 py-2.5 font-bold text-center text-xl" style={assignedStyle}>
                             {duty.assigned_to || '–'}

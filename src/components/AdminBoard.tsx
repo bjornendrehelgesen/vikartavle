@@ -20,6 +20,10 @@ interface Props {
 
 type SaveStatus = 'idle' | 'saving' | 'saved'
 
+function sanitizeTime(value: string): string {
+  return value.replace(/[^\d:]/g, '').slice(0, 5)
+}
+
 export default function AdminBoard({
   initialBoard,
   initialAbsences,
@@ -419,7 +423,7 @@ export default function AdminBoard({
                       <th className="text-left px-3 py-3 font-semibold text-sm w-28">Lærer</th>
                       {Array.from({ length: maxPeriods }, (_, i) => i + 1).map((p) => (
                         <th key={p} className="px-2 py-3 font-semibold text-center text-sm min-w-[72px]">
-                          T{p}
+                          {p}. time
                         </th>
                       ))}
                       <th className="px-2 py-3 w-16 text-center text-xs text-slate-400 font-normal">Timer</th>
@@ -573,9 +577,9 @@ export default function AdminBoard({
           </div>
 
           {/* Right: Duties (1/3) */}
-          <div className="flex-[1] min-w-0 flex flex-row gap-3">
+          <div className="flex-[1] min-w-0 flex flex-col gap-3">
             {/* Vakter */}
-            <div className="flex-1 bg-white rounded-xl border border-slate-200 overflow-hidden flex flex-col">
+            <div className="bg-white rounded-xl border border-slate-200 overflow-hidden flex flex-col">
               <div className="bg-slate-700 text-white px-3 py-3 font-semibold text-sm text-center">
                 Vakter
               </div>
@@ -598,7 +602,7 @@ export default function AdminBoard({
                       <input
                         type="text"
                         value={duty.time_slot}
-                        onChange={(e) => handleDutyField(duty.id, 'time_slot', e.target.value)}
+                        onChange={(e) => handleDutyField(duty.id, 'time_slot', sanitizeTime(e.target.value))}
                         placeholder="Tid"
                         className="w-14 flex-shrink-0 border border-slate-200 rounded px-2 py-2.5 text-sm text-center focus:outline-none focus:ring-1 focus:ring-slate-400"
                       />
@@ -642,7 +646,7 @@ export default function AdminBoard({
             </div>
 
             {/* Bussvakter */}
-            <div className="flex-1 bg-white rounded-xl border border-slate-200 overflow-hidden flex flex-col">
+            <div className="bg-white rounded-xl border border-slate-200 overflow-hidden flex flex-col">
               <div className="bg-slate-700 text-white px-3 py-3 font-semibold text-sm text-center">
                 Bussvakter
               </div>
@@ -658,7 +662,7 @@ export default function AdminBoard({
                       <select
                         value={duty.direction}
                         onChange={(e) => handleBusDutyField(duty.id, 'direction', e.target.value)}
-                        className="w-24 flex-shrink-0 border border-slate-200 rounded px-2 py-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-slate-400 bg-white"
+                        className="w-20 flex-shrink-0 border border-slate-200 rounded px-2 py-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-slate-400 bg-white"
                       >
                         <option value="">Retning</option>
                         <option value="Ålesund">Ålesund</option>
@@ -667,7 +671,7 @@ export default function AdminBoard({
                       <input
                         list="bus-times-list"
                         value={duty.time_label}
-                        onChange={(e) => handleBusDutyField(duty.id, 'time_label', e.target.value)}
+                        onChange={(e) => handleBusDutyField(duty.id, 'time_label', sanitizeTime(e.target.value))}
                         placeholder="Tid"
                         className="w-20 flex-shrink-0 border border-slate-200 rounded px-2 py-2.5 text-sm text-center focus:outline-none focus:ring-1 focus:ring-slate-400"
                       />
@@ -700,7 +704,7 @@ export default function AdminBoard({
                 <input
                   list="bus-times-list"
                   value={draftBusDutyTime}
-                  onChange={(e) => setDraftBusDutyTime(e.target.value)}
+                  onChange={(e) => setDraftBusDutyTime(sanitizeTime(e.target.value))}
                   onKeyDown={(e) => { if (e.key === 'Enter') submitDraftBusDuty() }}
                   onBlur={submitDraftBusDuty}
                   placeholder="Legg til…"
