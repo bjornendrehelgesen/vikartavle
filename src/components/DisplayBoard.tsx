@@ -185,7 +185,7 @@ export default function DisplayBoard({
             Sist oppdatert
           </p>
           <p style={{ fontSize: '18px', fontWeight: 300, color: '#BBB', fontVariantNumeric: 'tabular-nums' }}>
-            {lastUpdated.toLocaleTimeString('nb-NO', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+            {lastUpdated.toLocaleString('nb-NO', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
           </p>
         </div>
       </header>
@@ -365,7 +365,7 @@ export default function DisplayBoard({
           </div>
           {/* Oversikt — matches right column width */}
           {showRightPanel && hasOversikt && (
-            <div style={{ width: '375px', padding: '20px 36px 0', borderLeft: DIVIDER, display: 'flex', gap: '32px', alignItems: 'flex-start', flexShrink: 0 }}>
+            <div style={{ width: '375px', padding: '16px 36px 0', borderLeft: DIVIDER, flexShrink: 0, display: 'flex', flexDirection: 'column', gap: '10px' }}>
               <div>
                 <p style={{ fontSize: '10px', fontWeight: 500, letterSpacing: '0.22em', textTransform: 'uppercase', color: '#BBB', marginBottom: '4px' }}>Fravær</p>
                 <p style={{ fontSize: '18px', fontWeight: 400, color: '#1A1A1A' }}>
